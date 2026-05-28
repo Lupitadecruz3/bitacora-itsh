@@ -47,11 +47,13 @@ export const getReporteTipo = (f) => fetchReporte('tipo-practica', f);
 export const getReporteDocentes = (f) => fetchReporte('docentes', f);
 
 function fetchReporte(endpoint, filtros = {}) {
-  const params = new URLSearchParams(filtros);
-  return fetch(`${BASE}/reportes/${endpoint}?${params}`).then(r => r.json());
+  const params = new URLSearchParams();
+  if (filtros.fecha_inicio) params.append('fecha_inicio', filtros.fecha_inicio);
+  if (filtros.fecha_fin) params.append('fecha_fin', filtros.fecha_fin);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return fetch(`${BASE}/reportes/${endpoint}${query}`).then(r => r.json());
 }
 
-// ✅ getEventos ahora acepta filtros de fecha
 export const getEventos = (filtros = {}) => {
   const params = new URLSearchParams();
   if (filtros.fecha_inicio) params.append('fecha_inicio', filtros.fecha_inicio);
