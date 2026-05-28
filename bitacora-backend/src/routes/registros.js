@@ -5,7 +5,7 @@ const db = require('../config/db');
 router.get('/', async (req, res) => {
   const { fecha_inicio, fecha_fin } = req.query;
 
-  let query = 'SELECT * FROM vista_registros WHERE 1=1';
+ let query = 'SELECT * FROM railway.vista_registros WHERE 1=1';
   let params = [];
 
   if (fecha_inicio && fecha_fin) {
