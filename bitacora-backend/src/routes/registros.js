@@ -3,20 +3,44 @@ const router = express.Router();
 const db = require('../config/db');
 
 router.get('/', async (req, res) => {
-  const { fecha_inicio, fecha_fin } = req.query;
+  try {
+    const { fecha_inicio, fecha_fin } = req.query;
 
- let query = 'SELECT * FROM railway.vista_registros WHERE 1=1';
-  let params = [];
+    let query = `SELECT 
+      r.id_registro,
+      r.fecha,
+      CONCAT(d.nombre,' ',d.apellido) AS docente,
+      c.nombre_carrera AS carrera,
+      m.nombre_materia AS materia,
+      t.nombre AS tipo_practica,
+      r.numero_unidad AS unidad,
+      r.registrada_en_id,
+      r.alumnos_atendidos,
+      r.hora_entrada,
+      r.hora_salida,
+      l.nombre AS laboratorio
+    FROM registro r
+    JOIN docente d ON r.id_docente = d.id_docente
+    JOIN carrera c ON d.id_carrera = c.id_carrera
+    JOIN materia m ON r.id_materia = m.id_materia
+    JOIN tipos t ON r.tipo_practica_id_tipo = t.id_tipo
+    JOIN laboratorio l ON r.id_laboratorio = l.id_laboratorio
+    WHERE 1=1`;
 
-  if (fecha_inicio && fecha_fin) {
-    query += ' AND fecha BETWEEN ? AND ?';
-    params.push(fecha_inicio, fecha_fin);
+    let params = [];
+
+    if (fecha_inicio && fecha_fin) {
+      query += ' AND r.fecha BETWEEN ? AND ?';
+      params.push(fecha_inicio, fecha_fin);
+    }
+
+    query += ' ORDER BY r.fecha ASC, r.id_registro ASC';
+
+    const [rows] = await db.query(query, params);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  query += ' ORDER BY fecha ASC, id_registro ASC';
-
-  const [rows] = await db.query(query, params);
-  res.json(rows);
 });
 
 const buscarLaboratorioOcupado = async ({ id_laboratorio, fecha, hora_entrada, hora_salida }) => {
